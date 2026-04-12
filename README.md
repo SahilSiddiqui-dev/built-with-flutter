@@ -36,7 +36,7 @@ A personal collection of Flutter & Dart projects — from UI practice and clones
 
 - **Framework:** Flutter
 - **Language:** Dart
-- **Editor:** VS Code
+- **Editor:** VS Code , Android Studio
 - **Version Control:** Git & GitHub
 
 ---
