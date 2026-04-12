@@ -31,7 +31,7 @@ A personal collection of Flutter & Dart projects — from UI practice and clones
 ## 🛠️ Tech Used
 
 <p>
-  <img src="https://skillicons.dev/icons?i=flutter,dart,vscode,github" />
+  <img src="https://skillicons.dev/icons?i=flutter,dart,vscode,github,AndroidStudio" />
 </p>
 
 - **Framework:** Flutter
