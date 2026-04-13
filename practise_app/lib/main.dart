@@ -30,45 +30,59 @@ class _MyAppState extends State<MyApp> {
           backgroundColor: Colors.blueAccent,
           centerTitle: true,
         ),
-        body: Column(
-          children : [
-            Padding(
-            padding : const EdgeInsets.all(20),
-            child : TextField(
-              controller : _controller,
-              decoration : InputDecoration(
-                labelText : 'Enter the Task',
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(20),
-                ),
+        body: SingleChildScrollView(
+          child: Column(
+            children : [
+              Padding(
+                  padding : const EdgeInsets.all(20),
+                  child : TextField(
+                      controller : _controller,
+                      decoration : InputDecoration(
+                        labelText : 'Enter the Task',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
 
-              )
+                      )
 
-            )
-            ),
-            ...todoList.map((task){
-              return Container(
-                margin: EdgeInsets.all(20),
-                padding: EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: Colors.blueAccent,
-                  borderRadius: BorderRadius.circular(20),
+                  )
               ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(task,
-                    style: TextStyle(
-                      fontSize: 20,
-                      fontWeight: FontWeight.bold,
-                    ))
-                  ],
-                )
-                );
-            }).toList(),
-          ],
-        ),
+              ...todoList.map((task){
+                return Container(
+                    margin: EdgeInsets.all(20),
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(20),
 
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(task,
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            )
+                        ),
+                        IconButton(
+                          icon: Icon(Icons.delete, color: Colors.white),
+                            onPressed: () {
+                            setState(() {
+                              todoList.remove(task);
+                            });
+                            }
+
+                        )
+                      ],
+                      floatingActionButton: FloatingActionButton.extended(
+
+                    )
+                );
+              }).toList(),
+            ],
+          ),
+        ) ,
         floatingActionButton: FloatingActionButton.extended(
             onPressed: (){
               setState(() {
@@ -87,8 +101,6 @@ class _MyAppState extends State<MyApp> {
             ),
             icon: Icon(Icons.refresh),
             ),
-
-
       )
     );
 
