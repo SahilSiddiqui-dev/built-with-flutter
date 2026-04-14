@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
+import 'dart:convert';
 
 void main() {
   runApp(const MyApp());
 }
-class MyApp extends StatefulWidget{
+
+class MyApp extends StatefulWidget {
   const MyApp({super.key});
 
   @override
@@ -11,99 +14,222 @@ class MyApp extends StatefulWidget{
 }
 
 class _MyAppState extends State<MyApp> {
+  // Logic to save the list to the phone's storage
+  Future<void> saveTask() async {
+    final prefs = await SharedPreferences.getInstance();
+    String encodedData = jsonEncode(todoList);
+    await prefs.setString('todoData', encodedData);
+  }
+
+  // Logic to read the list from storage when the app opens
+  Future<void> loadTask() async {
+    final prefs = await SharedPreferences.getInstance();
+    String? savedData = prefs.getString('todoData');
+    if (savedData != null) {
+      setState(() {
+        todoList = List<Map<String, dynamic>>.from(jsonDecode(savedData));
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    loadTask(); // Load data as soon as the app starts
+  }
+
   final TextEditingController _controller = TextEditingController();
-  List<String> todoList = [];
+  List<Map<String, dynamic>> todoList = [];
+
   @override
   Widget build(BuildContext context) {
+    DateTime now = DateTime.now();
+    List<String> months = [
+      'January', 'February', 'March', 'April', 'May', 'June',
+      'July', 'August', 'September', 'October', 'November', 'December'
+    ];
+    String formattedDate = "${months[now.month - 1]} ${now.day}";
 
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'flutter Demo',
+      title: 'Focus App',
       home: Scaffold(
+        backgroundColor: const Color(0xFF111318),
         appBar: AppBar(
-          title: Text("To Do List",
-          style: TextStyle(
-              fontSize: 30,
-              fontWeight: FontWeight.bold,
-              fontStyle: FontStyle.italic,
-          )),
-          backgroundColor: Colors.blueAccent,
-          centerTitle: true,
+          toolbarHeight: 100,
+          title: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                formattedDate,
+                style: const TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
+                  fontStyle: FontStyle.italic,
+                  color: Colors.grey,
+                ),
+              ),
+              const Text(
+                "Focus List",
+                style: TextStyle(
+                  fontSize: 35,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ],
+          ),
+          backgroundColor: const Color(0xFF111318),
+          centerTitle: false,
+          elevation: 0,
         ),
         body: SingleChildScrollView(
           child: Column(
-            children : [
+            children: [
               Padding(
-                  padding : const EdgeInsets.all(20),
-                  child : TextField(
-                      controller : _controller,
-                      decoration : InputDecoration(
-                        labelText : 'Enter the Task',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-
-                      )
-
-                  )
-              ),
-              ...todoList.map((task){
-                return Container(
-                    margin: EdgeInsets.all(20),
-                    padding: EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                      borderRadius: BorderRadius.circular(20),
-
+                padding: const EdgeInsets.all(20),
+                child: TextField(
+                  style: const TextStyle(color: Colors.white),
+                  controller: _controller,
+                  decoration: InputDecoration(
+                    fillColor: Colors.deepPurpleAccent,
+                    labelText: 'Enter the Task',
+                    labelStyle: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurpleAccent,
                     ),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(task,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            )
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                ),
+              ),
+              if (todoList.isEmpty)
+                const Padding(
+                  padding: EdgeInsets.all(20),
+                  child: Text(
+                    'No tasks yet!! Add some tasks to the list',
+                    style: TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.deepPurpleAccent,
+                    ),
+                  ),
+                )
+              else
+                ...todoList.asMap().entries.map((entry) {
+                  int index = entry.key;
+                  var task = entry.value;
+                  return Dismissible(
+                    key: UniqueKey(),
+                    direction: DismissDirection.horizontal,
+                    background: Container(
+                      alignment: Alignment.centerLeft,
+                      color: Colors.green[900],
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.check, color: Colors.white),
+                    ),
+                    secondaryBackground: Container(
+                      alignment: Alignment.centerRight,
+                      color: const Color(0xFF7F1D1D),
+                      padding: const EdgeInsets.symmetric(horizontal: 20),
+                      child: const Icon(Icons.delete, color: Colors.white),
+                    ),
+                    confirmDismiss: (direction) async {
+                      if (direction == DismissDirection.startToEnd) {
+                        setState(() {
+                          todoList[index]['isDone'] = !todoList[index]['isDone'];
+                        });
+                        saveTask(); // SAVE after toggling completion
+                        return false;
+                      } else {
+                        return true;
+                      }
+                    },
+                    onDismissed: (direction) {
+                      if (direction == DismissDirection.endToStart) {
+                        setState(() {
+                          todoList.removeAt(index);
+                        });
+                        saveTask(); // SAVE after deleting
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.all(20),
+                      padding: const EdgeInsets.all(20),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF1D1F27),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: task['isDone']
+                              ? Colors.green.withValues(alpha: 0.8)
+                              : Colors.deepPurpleAccent.withValues(alpha: 0.8),
                         ),
-                        IconButton(
-                          icon: Icon(Icons.delete, color: Colors.white),
-                            onPressed: () {
-                            setState(() {
-                              todoList.remove(task);
-                            });
-                            }
-
-                        )
-                      ],
-                      floatingActionButton: FloatingActionButton.extended(
-
-                    )
-                );
-              }).toList(),
+                        boxShadow: const [
+                          BoxShadow(
+                            color: Colors.black26,
+                            blurRadius: 6,
+                            offset: Offset(0, 3),
+                          )
+                        ],
+                      ),
+                      child: Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Icon(
+                            task['isDone'] ? Icons.check_circle : Icons.circle_outlined,
+                            color: task['isDone'] ? Colors.lightGreenAccent : Colors.white70,
+                          ),
+                          Expanded(
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 10),
+                              child: Text(
+                                task['isDone']
+                                    ? "${task['name']} (Completed)"
+                                    : "${task['name']}",
+                                style: TextStyle(
+                                  fontSize: 22,
+                                  fontWeight: FontWeight.bold,
+                                  color: task['isDone'] ? Colors.grey : Colors.white,
+                                  decoration: task['isDone'] ? TextDecoration.lineThrough : null,
+                                ),
+                              ),
+                            ),
+                          ),
+                          const Icon(Icons.swipe, color: Colors.redAccent, size: 16),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
             ],
           ),
-        ) ,
+        ),
         floatingActionButton: FloatingActionButton.extended(
-            onPressed: (){
-              setState(() {
-                if(_controller.text.isNotEmpty) {
-                  todoList.add(_controller.text);
-                  _controller.clear();
-                }
-              });
-            },
-            backgroundColor: Colors.blueAccent,
-            label: Text('ADD TASK',
+          onPressed: () {
+            String taskName = _controller.text.trim();
+            setState(() {
+              bool alreadyExists = todoList.any((element) => element['name'] == taskName);
+              if (taskName.isNotEmpty && !alreadyExists) {
+                todoList.add({'name': taskName, 'isDone': false});
+                _controller.clear();
+              }
+            });
+            saveTask(); // SAVE after adding a new task
+          },
+          backgroundColor: Colors.deepPurpleAccent,
+          label: const Text(
+            'ADD TASK',
             style: TextStyle(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-            )
+              color: Colors.white,
             ),
-            icon: Icon(Icons.refresh),
-            ),
-      )
+          ),
+          icon: const Icon(Icons.refresh, color: Colors.white),
+        ),
+      ),
     );
-
   }
 }
-
