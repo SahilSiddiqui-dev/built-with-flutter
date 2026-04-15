@@ -216,7 +216,7 @@ class _MyAppState extends State<MyApp> {
                 _controller.clear();
               }
             });
-            saveTask(); // SAVE after adding a new task
+            saveTask();
           },
           backgroundColor: Colors.deepPurpleAccent,
           label: const Text(
