@@ -14,28 +14,34 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  // Logic to save the list to the phone's storage
+
   Future<void> saveTask() async {
     final prefs = await SharedPreferences.getInstance();
     String encodedData = jsonEncode(todoList);
     await prefs.setString('todoData', encodedData);
   }
 
-  // Logic to read the list from storage when the app opens
   Future<void> loadTask() async {
-    final prefs = await SharedPreferences.getInstance();
-    String? savedData = prefs.getString('todoData');
-    if (savedData != null) {
-      setState(() {
-        todoList = List<Map<String, dynamic>>.from(jsonDecode(savedData));
-      });
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      String? savedData = prefs.getString('todoData');
+      if (savedData != null && savedData.isNotEmpty) {
+        setState(() {
+          final decoded = jsonDecode(savedData);
+          if (decoded is List) {
+            todoList = List<Map<String, dynamic>>.from(decoded);
+          }
+        });
+      }
+    }
+    catch (e) {
+      print("error loading task : $e");
     }
   }
-
   @override
   void initState() {
     super.initState();
-    loadTask(); // Load data as soon as the app starts
+    loadTask();
   }
 
   final TextEditingController _controller = TextEditingController();
