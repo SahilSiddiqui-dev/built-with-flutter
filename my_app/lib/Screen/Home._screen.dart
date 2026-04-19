@@ -33,11 +33,10 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         backgroundColor: Colors.teal,
         // 2. Dynamic Title: Changes based on the selected tab
-        title: Text(_titles[_selectedIndex]), 
+        title: Text(_titles[_selectedIndex]),
         actions: [
           IconButton(
             onPressed: () {
-              // 3. Jump to the Settings tab (index 2) instead of pushing a new screen
               _onItemTapped(2); 
             },
             icon: const Icon(Icons.settings, color: Colors.white),
