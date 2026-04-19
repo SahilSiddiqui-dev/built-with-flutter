@@ -11,10 +11,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.teal,
-        title: const Text("Profile"),
-      ),
       body: Center(
         child: ElevatedButton(
           onPressed: () {
